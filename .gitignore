@@ -1,0 +1,19 @@
+# IDE
+.idea/
+.vscode/
+
+# Environment
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Database
+chroma_db/
+
+# Docs
+knowledge_base_qa/docs/
+
+# Claude
+.claude/

@@ -1,0 +1,9 @@
+langchain
+langchain-community
+langchain-core
+redis>=5.0.0
+huggingface-hub
+sentence-transformers
+pypdf
+unstructured
+python-dotenv
