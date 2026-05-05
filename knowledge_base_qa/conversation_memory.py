@@ -58,3 +58,55 @@ class ConversationMemory:
             formatted.append(f"{role}: {content}")
 
         return "\n".join(formatted)
+
+# === LangChain Memory 适配 ===
+
+    def to_langchain_history(self, session_id: str):
+        """
+        转换为 LangChain 的 ChatMessageHistory
+
+        Args:
+            session_id: 会话 ID
+
+        Returns:
+            ChatMessageHistory 对象，可用于 RunnableWithMessageHistory
+        """
+        try:
+            from langchain_core.messages import HumanMessage, AIMessage
+            from langchain.memory import ChatMessageHistory as LCChatMessageHistory
+        except ImportError:
+            raise ImportError("LangChain 未安装。请运行: pip install langchain-core")
+
+        history = self.get_full_history(session_id)
+        chat_history = LCChatMessageHistory()
+
+        for msg in history:
+            if msg["role"] == "user":
+                chat_history.add_user_message(msg["content"])
+            elif msg["role"] == "assistant":
+                chat_history.add_ai_message(msg["content"])
+
+        return chat_history
+
+    def get_langchain_messages(self, session_id: str) -> list:
+        """
+        获取 LangChain 格式的消息列表
+
+        Returns:
+            List[BaseMessage] - 可直接用于 ChatPromptTemplate
+        """
+        try:
+            from langchain_core.messages import HumanMessage, AIMessage
+        except ImportError:
+            raise ImportError("LangChain 未安装。请运行: pip install langchain-core")
+
+        history = self.get_full_history(session_id)
+        messages = []
+
+        for msg in history:
+            if msg["role"] == "user":
+                messages.append(HumanMessage(content=msg["content"]))
+            elif msg["role"] == "assistant":
+                messages.append(AIMessage(content=msg["content"]))
+
+        return messages
