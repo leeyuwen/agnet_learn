@@ -3,6 +3,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+
 from agent import KnowledgeBaseAgent
 from document_loader import DocumentLoader
 
@@ -22,6 +25,7 @@ def init_knowledge_base():
     agent.rebuild_index(documents)
 
     print("\n知识库初始化完成！")
+    print("Agent 类型: ReAct Agent (支持多步推理)")
     return agent
 
 
@@ -29,7 +33,7 @@ def chat_loop(agent: KnowledgeBaseAgent):
     session_id = "default"
 
     print("\n" + "=" * 50)
-    print("知识库问答系统")
+    print("知识库问答系统 (ReAct Agent)")
     print("输入 'quit' 退出, 'clear' 清除会话历史")
     print("=" * 50 + "\n")
 
@@ -50,6 +54,8 @@ def chat_loop(agent: KnowledgeBaseAgent):
                 continue
 
             print("\n正在思考...")
+            print("(Agent 正在推理，请稍候...)\n")
+
             answer, sources = agent.query(question, session_id)
 
             print(f"\n助手: {answer}")
