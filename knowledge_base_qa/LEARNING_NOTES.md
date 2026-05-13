@@ -110,6 +110,48 @@ result = chain.invoke({"question": "...", "context": "..."})
 3. **什么时候用 ChatPromptTemplate?** - 对话场景，需要区分 system/human/assistant 角色时
 4. **OutputParser 的作用?** - 将 LLM 的原始输出（可能是 AIMessage 对象）转换为结构化数据（字符串、JSON 等）
 
+### Q&A 笔记
+
+**Q: 为什么调用 `qa_chain.invoke()` 时会把 `question` 和 `context` 注入到 prompt 模板？**
+
+A: 因为 `invoke` 是 **chain 的方法**，不是 prompt 的方法。Chain 通过 `|` 操作符串联了 `prompt | llm | StrOutputParser()` 三个组件。
+
+**代码片段：**
+
+```python
+# stage1_basics.py 中的 QA Chain 定义
+chain = prompt | self.llm | StrOutputParser()
+
+# 调用时
+result = qa_chain.invoke({
+    "question": "LangChain 是什么？",
+    "context": "LangChain 是一个用于构建 LLM 应用的框架。"
+})
+```
+
+**执行流程：**
+
+```
+qa_chain.invoke() 触发整条链
+        │
+        ▼
+┌─────────────────────────────────┐
+│ 1. prompt 渲染                  │ ← 根据 {question}、{context} 占位符填充
+└───────────────┬─────────────────┘
+                ▼
+┌─────────────────────────────────┐
+│ 2. llm 调用 MiniMax API         │
+└───────────────┬─────────────────┘
+                ▼
+┌─────────────────────────────────┐
+│ 3. StrOutputParser 提取字符串    │
+└───────────────┬─────────────────┘
+                ▼
+             最终结果
+```
+
+所以 `invoke` 触发的是整条流水线，prompt 的模板渲染是第一个环节自动完成的。
+
 ---
 
 ## Stage 2: ReAct Agent（已完成）
@@ -363,6 +405,30 @@ refine_chain = refine_prompt | llm | StrOutputParser()
 2. **为什么需要 Reflection?** - 提高回答准确性，避免错误传播
 3. **QualityChecker 检查哪些维度?** - 基于文档、事实准确性、回答完整性
 4. **Refinement Loop 如何工作?** - 检查 → 不合格则修正 → 再次检查 → 最多 N 次
+
+### Q&A 笔记
+
+**Q: ReflectionAgent 是不是相当于一个 Agent 里套了一个 QualityChecker 的 Agent？**
+
+A: 不完全是。**QualityChecker 不是一个 Agent，只是一个简单的 LCEL Chain**：
+
+```python
+# QualityChecker 的本质是一个简单 Chain
+self.chain = self.prompt | self.llm | StrOutputParser()
+```
+
+| 组件 | 类型 | 结构 |
+|------|------|------|
+| `QualityChecker` | 简单 LCEL Chain | `prompt \| llm \| StrOutputParser()`，一次性返回检查结果 |
+| `ReflectionAgent` | 工作流编排器 | 不是 Agent，是包装器，调用 QualityChecker 和 refine chain |
+
+真正的 Agent（如 Stage 2 的 ReAct Agent）会有 `Thought → Action → Observation` 的循环推理。而 **ReflectionAgent 的本质是一个质检修正工作流**：
+
+```
+草稿回答 → QualityChecker 检查 → [passed] → 直接返回
+                                    ↓
+                               [failed] → refine_answer 改进 → 返回改进后的回答
+```
 
 ## Stage 4: Memory 升级（已完成）
 
