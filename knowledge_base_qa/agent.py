@@ -103,26 +103,25 @@ Final Answer: [你的回答]
         self.memory.add_message(session_id, "user", question)
 
         history = self.memory.get_full_history(session_id)
-        chat_history = self._format_chat_history(history)
 
-        result = self.agent.invoke({
-            "input": question,
-            "chat_history": chat_history,
-        }, config=RunnableConfig(max_iterations=5, verbose=True))
+        # 构建消息列表
+        messages = []
+        for msg in history:
+            messages.append({"role": msg["role"], "content": msg["content"]})
 
-        answer = result.get("output", result.get("messages", []))
+        result = self.agent.invoke(
+            {"messages": messages},
+            config=RunnableConfig(max_iterations=5, verbose=True)
+        )
 
-        # 提取最终答案
-        if isinstance(answer, list):
-            # 从消息中提取助手回复
-            for msg in reversed(answer):
-                if isinstance(msg, AIMessage):
-                    answer = msg.content
-                    break
-            else:
-                answer = str(answer[-1]) if answer else "无法生成回答"
-        elif not isinstance(answer, str):
-            answer = str(answer)
+        # 从结果中提取助手回复
+        all_messages = result.get("messages", [])
+        answer = "无法生成回答"
+
+        for msg in reversed(all_messages):
+            if hasattr(msg, 'content') and msg.content and hasattr(msg, 'type') and msg.type == 'ai':
+                answer = msg.content
+                break
 
         self.memory.add_message(session_id, "assistant", answer)
 

@@ -1,7 +1,7 @@
 import os
 import chromadb
 from chromadb.config import Settings
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from config import Config
 
@@ -9,9 +9,12 @@ from config import Config
 class VectorStore:
     def __init__(self):
         os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+        if Config.HF_TOKEN:
+            os.environ["HF_TOKEN"] = Config.HF_TOKEN
         self.embeddings = HuggingFaceEmbeddings(
             model_name="shibing624/text2vec-base-chinese",
-            model_kwargs={"device": "cpu"}
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"token": Config.HF_TOKEN} if Config.HF_TOKEN else {}
         )
         self.persist_directory = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "chroma_db"

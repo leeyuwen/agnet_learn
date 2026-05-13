@@ -74,6 +74,20 @@ def main():
         return
 
     agent = init_knowledge_base()
+
+    # 支持 --question 参数直接测试
+    if len(sys.argv) > 2 and sys.argv[1] == "--question":
+        question = sys.argv[2]
+        print("\n" + "=" * 50)
+        print(f"问题: {question}")
+        print("=" * 50 + "\n")
+
+        print("正在思考...")
+        answer, sources = agent.query(question, "test_session")
+        print(f"\n助手: {answer}")
+        print(f"\n参考文档:\n{sources}")
+        return
+
     chat_loop(agent)
 
 

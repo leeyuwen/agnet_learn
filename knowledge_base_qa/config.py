@@ -27,3 +27,5 @@ class Config:
     CHUNK_OVERLAP = 50
 
     DOCS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
+
+    HF_TOKEN = os.getenv("HF_TOKEN", "")

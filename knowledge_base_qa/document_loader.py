@@ -38,7 +38,7 @@ class DocumentLoader:
             folder_path = Config.DOCS_FOLDER
 
         if not os.path.exists(folder_path):
-            raise FileNotFoundError(f"文件夹不存在: {folder_path}")
+            os.makedirs(folder_path, exist_ok=True)
 
         all_docs = []
         for root, _, files in os.walk(folder_path):

@@ -1,6 +1,7 @@
 langchain
 langchain-community
 langchain-core
+langchain-openai
 redis>=5.0.0
 huggingface-hub
 sentence-transformers
