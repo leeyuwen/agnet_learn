@@ -542,3 +542,103 @@ prompt = ChatPromptTemplate.from_messages([
 | Stage 2: ReAct Agent | ✅ 完成 | 2026-05-05 | `56c6d6e` |
 | Stage 3: Reflection | ✅ 完成 | 2026-05-05 | `cbfb4ee` |
 | Stage 4: Memory 升级 | ✅ 完成 | 2026-05-05 | `6f35f78` |
+| Stage 5: Multi-Agent | ✅ 完成 | 2026-05-14 | `b5ypk2m` |
+
+---
+
+## Stage 5: Multi-Agent Systems（已完成）
+
+**完成日期:** 2026-05-14
+**提交:** 待提交
+
+### 核心概念
+
+#### 1. Multi-Agent 架构模式
+
+Multi-Agent = 多个专业 Agent 协作完成复杂任务，核心角色：
+- **Supervisor Agent**：协调者，分析任务并分配给合适的 Worker
+- **Researcher Agent**：研究员，负责检索知识库
+- **Writer Agent**：写作者，负责整理和生成最终回答
+
+#### 2. Supervisor + Workers 模式
+
+```
+User Query → Supervisor → 并行分发 [Researcher, Writer] → Supervisor 汇总 → Final Answer
+```
+
+**Supervisor 职责：**
+- 分析用户问题，判断需要哪些能力
+- 负责任务分发和结果汇总
+- 维护完整的协作流程控制
+
+**Worker 职责：**
+- 专注于单一领域任务
+- 返回结构化结果给 Supervisor
+- 不直接与用户交互
+
+#### 3. 懒加载模式
+
+避免初始化时的网络和资源消耗：
+```python
+class ResearcherAgent:
+    def __init__(self):
+        self.vector_store = None  # 懒加载
+        self.agent = None
+
+    def _lazy_init(self):
+        if self.vector_store is None:
+            self.vector_store = VectorStore()
+            self.agent = self._create_agent()
+```
+
+### 关键代码模式
+
+```python
+# 1. 创建 Supervisor
+supervisor = SupervisorAgent()
+
+# 2. 分析任务
+decision = supervisor.analyze_task(question)
+# 返回: {"need_research": True/False, "need_write": True/False, "complexity": "简单/中等/复杂"}
+
+# 3. 协调处理
+result = supervisor.process(question)
+# 返回: {"question", "answer", "research_data", "decision"}
+```
+
+### 面试要点
+
+1. **Multi-Agent 是什么?** - 多个专业 Agent 协作完成复杂任务的架构模式
+2. **Supervisor 的作用?** - 协调者，分析任务并分配给合适的 Worker，最后汇总结果
+3. **Worker 和普通 Agent 的区别?** - Worker 专注于单一领域，不直接与用户交互
+4. **为什么用懒加载?** - 避免初始化时的网络和资源消耗，提高响应速度
+
+### Q&A 笔记
+
+**Q: Multi-Agent 和单 Agent 的区别?**
+
+| 方面 | 单 Agent | Multi-Agent |
+|------|----------|--------------|
+| 复杂度 | 低 | 高 |
+| 任务分解 | 无 | Supervisor 分解任务 |
+| 并行执行 | 无 | 可以并行 |
+| 适用场景 | 简单任务 | 复杂任务 |
+
+**Q: Supervisor 如何决定分配任务?**
+
+A: Supervisor 通过一个分析 Chain 来判断：
+- 是否需要检索（NeedResearch）
+- 是否需要写作（NeedWrite）
+- 任务复杂程度（Complexity）
+
+---
+
+## 学习进度
+
+| Stage | 状态 | 完成日期 | 提交 |
+|-------|------|----------|------|
+| Stage 1: LangChain 基础 | ✅ 完成 | 2026-05-05 | `3f0f9fd` |
+| Stage 2: ReAct Agent | ✅ 完成 | 2026-05-05 | `56c6d6e` |
+| Stage 3: Reflection | ✅ 完成 | 2026-05-05 | `cbfb4ee` |
+| Stage 4: Memory 升级 | ✅ 完成 | 2026-05-05 | `6f35f78` |
+| Stage 5: Multi-Agent | ✅ 完成 | 2026-05-14 | 待提交 |
